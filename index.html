@@ -95,6 +95,77 @@
 				display: none;
 			}
 		}
+
+		/* Notification Styles */
+		.notification {
+			position: fixed;
+			top: 20px;
+			right: 20px;
+			z-index: 1000;
+			max-width: 400px;
+			padding: 0;
+			border-radius: 8px;
+			box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+			animation: slideIn 0.3s ease-out;
+		}
+
+		.notification-success {
+			background: linear-gradient(135deg, #4CAF50, #45a049);
+			color: white;
+		}
+
+		.notification-error {
+			background: linear-gradient(135deg, #f44336, #da190b);
+			color: white;
+		}
+
+		.notification-content {
+			padding: 16px 20px;
+			display: flex;
+			align-items: center;
+			gap: 12px;
+		}
+
+		.notification-content i {
+			font-size: 20px;
+			flex-shrink: 0;
+		}
+
+		.notification-content span {
+			flex: 1;
+			font-weight: 500;
+		}
+
+		.notification-close {
+			background: none;
+			border: none;
+			color: white;
+			font-size: 20px;
+			cursor: pointer;
+			padding: 0;
+			width: 24px;
+			height: 24px;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			border-radius: 50%;
+			transition: background-color 0.2s;
+		}
+
+		.notification-close:hover {
+			background-color: rgba(255,255,255,0.2);
+		}
+
+		@keyframes slideIn {
+			from {
+				transform: translateX(100%);
+				opacity: 0;
+			}
+			to {
+				transform: translateX(0);
+				opacity: 1;
+			}
+		}
 	</style>
 </head>
 
@@ -1078,6 +1149,8 @@
 	<script src="assets/js/jquery-3.4.1.min.js"></script>
 	<script src="assets/js/plugins.min.js"></script>
 	<script src="assets/js/common.js"></script>
+	<!-- EmailJS -->
+	<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 	<script>
 		if (localStorage.getItem("theme") === null) {
@@ -1098,10 +1171,81 @@
 			localStorage.setItem('theme', 'dark');
 			$('head').append('<link rel="stylesheet" id="dark-mode" type="text/css" href="assets/styles/style-dark.css" />');
 		});
+		+
 
 		$('[data-toggle="tooltip"]').tooltip({
 			trigger: 'hover'
 		});
+
+		// EmailJS Configuration
+		(function(){
+			// Initialize EmailJS with your public key
+			emailjs.init("gTgAQ0dY9gx0Siu1P"); // Replace with your actual public key
+		})();
+
+		// Contact Form Handler
+		document.getElementById('contact-form').addEventListener('submit', function(event) {
+			event.preventDefault();
+			
+			const submitBtn = this.querySelector('button[type="submit"]');
+			const originalBtnText = submitBtn.innerHTML;
+			
+			// Show loading state
+			submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+			submitBtn.disabled = true;
+			
+			// Get form data
+			const templateParams = {
+				from_name: document.getElementById('nameContact').value,
+				from_email: document.getElementById('emailContact').value,
+				message: document.getElementById('messageContact').value,
+			};
+			
+			// Send email using EmailJS
+			emailjs.send('service_nktlb5a', 'template_ax7em6r', templateParams)
+				.then(function(response) {
+					console.log('SUCCESS!', response.status, response.text);
+					
+					// Show success message
+					showNotification('Message sent successfully! I\'ll get back to you soon.', 'success');
+					
+					// Reset form
+					document.getElementById('contact-form').reset();
+					
+				}, function(error) {
+					console.log('FAILED...', error);
+					
+					// Show error message
+					showNotification('Failed to send message. Please try again or contact me directly.', 'error');
+				})
+				.finally(function() {
+					// Reset button
+					submitBtn.innerHTML = originalBtnText;
+					submitBtn.disabled = false;
+				});
+		});
+
+		// Notification function
+		function showNotification(message, type) {
+			const notification = document.createElement('div');
+			notification.className = `notification notification-${type}`;
+			notification.innerHTML = `
+				<div class="notification-content">
+					<i class="fas fa-${type === 'success' ? 'check-circle' : 'exclamation-circle'}"></i>
+					<span>${message}</span>
+					<button class="notification-close" onclick="this.parentElement.parentElement.remove()">×</button>
+				</div>
+			`;
+			
+			document.body.appendChild(notification);
+			
+			// Auto remove after 5 seconds
+			setTimeout(() => {
+				if (notification.parentElement) {
+					notification.remove();
+				}
+			}, 5000);
+		}
 
 		// Typing Animation Script
 		document.addEventListener('DOMContentLoaded', function() {
