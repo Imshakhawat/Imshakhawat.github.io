@@ -44,6 +44,59 @@
 	<!-- Styles -->
 	<link rel="stylesheet" type="text/css" href="assets/styles/style.css" />
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.8.0/css/all.min.css">
+	
+	<!-- Custom Styles for Typing Animation -->
+	<style>
+		.banner-text-container {
+			position: absolute;
+			top: 40%;
+			left: 50%;
+			transform: translate(-50%, -50%);
+			z-index: 10;
+			text-align: center;
+			width: 90%;
+			max-width: 1000px;
+		}
+
+		.typing-text {
+			font-size: 2rem;
+			font-weight: 700;
+			color: #ffffff;
+			margin: 0;
+			padding: 0;
+			white-space: nowrap;
+			overflow: hidden;
+		}
+
+		/* Light mode styles */
+		body:not([class*="dark"]) .typing-text {
+			color: #ffffff;
+		}
+
+		body:not([class*="dark"]) .typing-cursor {
+			background-color: #2c3e50;
+		}
+
+		.typing-cursor {
+			display: inline-block;
+			background-color: white;
+			margin-left: 2px;
+			width: 3px;
+			animation: blink 1s infinite;
+		}
+
+		@keyframes blink {
+			0%, 50% { opacity: 1; }
+			51%, 100% { opacity: 0; }
+		}
+
+		/* Hide on mobile devices */
+		@media (max-width: 768px) {
+			.banner-text-container {
+				display: none;
+			}
+		}
+	</style>
 </head>
 
 <body>
@@ -72,6 +125,10 @@
 		<!-- Header Image -->
 		<div class="header-image">
 			<div class="js-parallax" style="background-image: url(assets/img/header_bg_1x.png);"></div>
+			<!-- Typing Animation Text -->
+			<div class="banner-text-container">
+				<h1 class="typing-text" id="typing-text"></h1>
+			</div>
 		</div>
 
 		<div class="container gutter-top">
@@ -1045,6 +1102,30 @@
 
 		$('[data-toggle="tooltip"]').tooltip({
 			trigger: 'hover'
+		});
+
+		// Typing Animation Script
+		document.addEventListener('DOMContentLoaded', function() {
+			const textToType = "From code to cloud — automating, optimizing, and unlocking intelligence.";
+			const typingElement = document.getElementById('typing-text');
+			let currentIndex = 0;
+			let typingSpeed = 80; // milliseconds per character
+
+			function typeText() {
+				if (currentIndex < textToType.length) {
+					typingElement.innerHTML = textToType.substring(0, currentIndex + 1) + '<span class="typing-cursor">|</span>';
+					currentIndex++;
+					setTimeout(typeText, typingSpeed);
+				} else {
+					// Remove cursor after typing is complete
+					setTimeout(function() {
+						typingElement.innerHTML = textToType;
+					}, 1000);
+				}
+			}
+
+			// Start typing animation after a short delay
+			setTimeout(typeText, 1000);
 		});
 	</script>
 </body>
